@@ -1,6 +1,7 @@
 'use client';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import React from 'react';
 
@@ -16,22 +17,17 @@ type PresetType =
   | 'rotate'
   | 'swing';
 
-type MotionVariants = {
-  hidden?: any;
-  visible?: any;
-};
-
 type AnimatedGroupProps = {
   children: ReactNode;
   className?: string;
   variants?: {
-    container?: MotionVariants;
-    item?: MotionVariants;
+    container?: Variants;
+    item?: Variants;
   };
   preset?: PresetType;
 };
 
-const defaultContainerVariants: MotionVariants = {
+const defaultContainerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -41,14 +37,14 @@ const defaultContainerVariants: MotionVariants = {
   },
 };
 
-const defaultItemVariants: MotionVariants = {
+const defaultItemVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1 },
 };
 
 const presetVariants: Record<
   PresetType,
-  { container: MotionVariants; item: MotionVariants }
+  { container: Variants; item: Variants }
 > = {
   fade: {
     container: defaultContainerVariants,

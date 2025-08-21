@@ -105,7 +105,7 @@ const Register: React.FC = () => {
                   name="firstname"
                   id="firstname"
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value)}
                   placeholder="First name"
                 />
               </div>
@@ -119,7 +119,7 @@ const Register: React.FC = () => {
                   name="lastname"
                   id="lastname"
                   value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
                   placeholder="Last name"
                 />
               </div>
@@ -135,7 +135,7 @@ const Register: React.FC = () => {
                 name="email"
                 id="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                 placeholder="Enter your email"
               />
             </div>
@@ -150,7 +150,7 @@ const Register: React.FC = () => {
                 name="pwd"
                 id="pwd"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                 placeholder="Enter your password"
               />
             </div>
@@ -165,7 +165,7 @@ const Register: React.FC = () => {
                 name="confirmPwd"
                 id="confirmPwd"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm your password"
               />
             </div>
