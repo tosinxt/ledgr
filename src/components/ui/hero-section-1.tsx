@@ -4,6 +4,8 @@ import { ArrowRight, ChevronRight, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AnimatedGroup } from '@/components/ui/animated-group'
 import { Pricing } from '@/components/ui/pricing'
+import { Features } from '@/components/blocks/features-9'
+
 import { cn } from '@/lib/utils'
 
 const transitionVariants = {
@@ -337,8 +339,11 @@ export function HeroSection() {
                     </div>
                 </section>
                 
+                {/* Features Section */}
+                <Features />
+                
                 {/* Pricing Section */}
-                <section id="pricing" className="bg-background">
+                <section id="pricing" className="bg-background mt-20 md:mt-28">
                     <Pricing 
                         plans={ledgrPlans}
                         title="Simple, Transparent Pricing"

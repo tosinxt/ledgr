@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CreateInvoice from './pages/CreateInvoice';
+import FooterDemo from './pages/FooterDemo';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -47,6 +48,7 @@ function App() {
           <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/hero" element={<SimpleHome />} />
+          <Route path="/footer-demo" element={<FooterDemo />} />
           <Route 
             path="/login" 
             element={
