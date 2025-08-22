@@ -1,12 +1,16 @@
-import React from 'react';
-import { HeroSection } from '@/components/ui/hero-section-1';
-import { Component as Footer } from '@/components/ui/footer-taped-design';
+import React, { Suspense, lazy } from 'react';
+const HeroSection = lazy(() => import('@/components/ui/hero-section-1').then(m => ({ default: m.HeroSection })));
+const Footer = lazy(() => import('@/components/ui/footer-taped-design').then(m => ({ default: m.Component })));
 
 const Home: React.FC = () => {
   return (
     <>
-      <HeroSection />
-      <Footer />
+      <Suspense fallback={<div />}> 
+        <HeroSection />
+      </Suspense>
+      <Suspense fallback={<div />}> 
+        <Footer />
+      </Suspense>
     </>
   );
 };

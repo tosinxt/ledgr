@@ -1,22 +1,23 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './hooks/useAuth';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
-import Home from './pages/Home';
-import SimpleHome from './pages/SimpleHome';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import DashboardHome from './pages/DashboardHome';
-import Invoices from './pages/Invoices';
-import Profile from './pages/Profile';
-import Settings from './pages/Settings';
-import Templates from './pages/Templates';
-import CreateInvoice from './pages/CreateInvoice';
-import FooterDemo from './pages/FooterDemo';
-import AlertDemo from './pages/AlertDemo';
+// Route-based code-splitting
+const Home = lazy(() => import('./pages/Home'));
+const SimpleHome = lazy(() => import('./pages/SimpleHome'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const DashboardHome = lazy(() => import('./pages/DashboardHome'));
+const Invoices = lazy(() => import('./pages/Invoices'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Templates = lazy(() => import('./pages/Templates'));
+const CreateInvoice = lazy(() => import('./pages/CreateInvoice'));
+const FooterDemo = lazy(() => import('./pages/FooterDemo'));
+const AlertDemo = lazy(() => import('./pages/AlertDemo'));
 // Removed legacy DashboardWithSidebar to use the unified Dashboard with integrated sidebar
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -65,11 +66,12 @@ function App() {
     <ErrorBoundary>
       <AuthProvider>
         <Router>
-          <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/hero" element={<SimpleHome />} />
-          <Route path="/footer-demo" element={<FooterDemo />} />
-          <Route 
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div></div>}>
+            <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/hero" element={<SimpleHome />} />
+            <Route path="/footer-demo" element={<FooterDemo />} />
+            <Route 
             path="/login" 
             element={
               <PublicRoute>
@@ -108,7 +110,8 @@ function App() {
             } 
           />
           <Route path="/alert-demo" element={<AlertDemo />} />
-          </Routes>
+            </Routes>
+          </Suspense>
         </Router>
       </AuthProvider>
     </ErrorBoundary>
