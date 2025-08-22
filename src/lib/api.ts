@@ -1,6 +1,17 @@
 import { supabase } from '@/lib/supabase';
 import { getJSONCache, setJSONCache, getBlobCache, setBlobCache } from '@/lib/cache';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
+
+function resolveUrl(input: string): string {
+  // If input is an absolute URL (http/https) or protocol-relative, leave it
+  if (/^https?:\/\//i.test(input)) return input;
+  // If starts with '/', prefix with API_BASE (e.g., https://backend-04a2.onrender.com)
+  if (input.startsWith('/')) return `${API_BASE}${input}`;
+  // Otherwise return as-is
+  return input;
+}
+
 export async function apiFetch(input: string, init: RequestInit = {}) {
   const { data } = await supabase.auth.getSession();
   const accessToken = data.session?.access_token;
@@ -14,7 +25,7 @@ export async function apiFetch(input: string, init: RequestInit = {}) {
   const shouldSetJson = !!init.body && !(init.body instanceof FormData) && !(init.body instanceof Blob);
   const headers: HeadersInit = shouldSetJson ? { 'Content-Type': 'application/json', ...baseHeaders } : baseHeaders;
 
-  return fetch(input, { ...init, headers });
+  return fetch(resolveUrl(input), { ...init, headers });
 }
 
 export async function getJSON<T>(input: string, init?: RequestInit): Promise<T> {
