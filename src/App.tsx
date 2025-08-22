@@ -9,8 +9,15 @@ import SimpleHome from './pages/SimpleHome';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import DashboardHome from './pages/DashboardHome';
+import Invoices from './pages/Invoices';
+import Profile from './pages/Profile';
+import Settings from './pages/Settings';
+import Templates from './pages/Templates';
 import CreateInvoice from './pages/CreateInvoice';
 import FooterDemo from './pages/FooterDemo';
+import AlertDemo from './pages/AlertDemo';
+// Removed legacy DashboardWithSidebar to use the unified Dashboard with integrated sidebar
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -40,6 +47,19 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return user ? <Navigate to="/dashboard" /> : <>{children}</>;
 };
 
+// Protected route without the global Layout (no header/footer), used for dashboard
+const ProtectedRouteBare: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+  return user ? <>{children}</> : <Navigate to="/login" />;
+};
+
 function App() {
   return (
     <ErrorBoundary>
@@ -66,13 +86,19 @@ function App() {
             } 
           />
           <Route 
-            path="/dashboard" 
+            path="/dashboard/*" 
             element={
-              <ProtectedRoute>
+              <ProtectedRouteBare>
                 <Dashboard />
-              </ProtectedRoute>
-            } 
-          />
+              </ProtectedRouteBare>
+            }
+          >
+            <Route index element={<DashboardHome />} />
+            <Route path="invoices" element={<Invoices />} />
+            <Route path="templates" element={<Templates />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
           <Route 
             path="/create-invoice" 
             element={
@@ -81,6 +107,7 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          <Route path="/alert-demo" element={<AlertDemo />} />
           </Routes>
         </Router>
       </AuthProvider>

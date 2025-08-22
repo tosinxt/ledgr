@@ -7,6 +7,7 @@ import { Pricing } from '@/components/ui/pricing'
 import { Features } from '@/components/blocks/features-9'
 
 import { cn } from '@/lib/utils'
+import heroVideo from '@/assets/Holographic_Invoice_Cinematic_Reveal.mp4'
 
 const transitionVariants = {
     item: {
@@ -108,40 +109,7 @@ export function HeroSection() {
                 </div>
                 <section>
                     <div className="relative pt-24 md:pt-36">
-                        <AnimatedGroup
-                            variants={{
-                                container: {
-                                    visible: {
-                                        transition: {
-                                            delayChildren: 1,
-                                        },
-                                    },
-                                },
-                                item: {
-                                    hidden: {
-                                        opacity: 0,
-                                        y: 20,
-                                    },
-                                    visible: {
-                                        opacity: 1,
-                                        y: 0,
-                                        transition: {
-                                            type: 'spring',
-                                            bounce: 0.3,
-                                            duration: 2,
-                                        },
-                                    },
-                                },
-                            }}
-                            className="absolute inset-0 -z-20">
-                            <img
-                                src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3276&q=80"
-                                alt="background"
-                                className="absolute inset-x-0 top-56 -z-20 hidden lg:top-32 dark:block"
-                                width="3276"
-                                height="4095"
-                            />
-                        </AnimatedGroup>
+                        {/* Background video removed for performance and design request */}
                         <div aria-hidden className="absolute inset-0 -z-10 size-full [background:radial-gradient(125%_125%_at_50%_100%,transparent_0%,var(--background)_75%)]" />
                         <div className="mx-auto max-w-7xl px-6">
                             <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
@@ -231,20 +199,7 @@ export function HeroSection() {
                                     className="bg-gradient-to-b to-background absolute inset-0 z-10 from-transparent from-35%"
                                 />
                                 <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
-                                    <img
-                                        className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
-                                        src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2700&q=80"
-                                        alt="invoice management dashboard"
-                                        width="2700"
-                                        height="1440"
-                                    />
-                                    <img
-                                        className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
-                                        src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2700&q=80"
-                                        alt="invoice management dashboard"
-                                        width="2700"
-                                        height="1440"
-                                    />
+                                    <VideoShowcase />
                                 </div>
                             </div>
                         </AnimatedGroup>
@@ -478,5 +433,48 @@ const Logo = ({ className }: { className?: string }) => {
             </div>
             <span className="font-bold text-xl text-foreground">Ledgr</span>
         </div>
+    )
+}
+
+// Foreground showcase video inside framed container
+const VideoShowcase: React.FC = () => {
+    const ref = React.useRef<HTMLVideoElement | null>(null)
+
+    React.useEffect(() => {
+        const el = ref.current
+        if (!el) return
+        el.muted = true
+        let io: IntersectionObserver | null = new IntersectionObserver(
+            (entries) => {
+                const entry = entries[0]
+                if (!entry) return
+                if (entry.isIntersecting) {
+                    el.play().catch(() => {})
+                } else {
+                    el.pause()
+                }
+            },
+            { threshold: 0.35 }
+        )
+        io.observe(el)
+        return () => {
+            if (io) {
+                io.disconnect()
+            }
+            io = null
+        }
+    }, [])
+
+    return (
+        <video
+            ref={ref}
+            className="z-2 aspect-15/8 relative rounded-2xl border border-border/25 w-full object-cover"
+            src={heroVideo}
+            playsInline
+            autoPlay
+            muted
+            loop
+            preload="metadata"
+        />
     )
 }

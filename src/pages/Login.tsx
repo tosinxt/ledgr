@@ -4,6 +4,8 @@ import { useAuth } from '../hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertContent, AlertDescription, AlertIcon, AlertTitle } from '@/components/ui/alert-1';
+import { XCircle } from 'lucide-react';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -21,8 +23,9 @@ const Login: React.FC = () => {
     try {
       await login(email, password);
       navigate('/dashboard');
-    } catch {
-      setError('Invalid email or password');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Invalid email or password';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -72,11 +75,21 @@ const Login: React.FC = () => {
 
           <hr className="my-4 border-dashed" />
 
-          {error && (
-            <div className="mb-4 p-3 rounded-md bg-destructive/15 border border-destructive/20 text-destructive text-sm">
-              {error}
-            </div>
-          )}
+          <div aria-live="polite" aria-atomic="true">
+            {error && (
+              <div className="mb-4">
+                <Alert variant="destructive" appearance="light" close onClose={() => setError('')}>
+                  <AlertIcon>
+                    <XCircle className="text-destructive" />
+                  </AlertIcon>
+                  <AlertContent>
+                    <AlertTitle>Sign-in failed</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </AlertContent>
+                </Alert>
+              </div>
+            )}
+          </div>
 
           <div className="space-y-4">
             <div className="space-y-2">
@@ -90,7 +103,10 @@ const Login: React.FC = () => {
                 autoComplete="email"
                 required
                 value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  if (error) setError('');
+                  setEmail(e.target.value);
+                }}
                 placeholder="Enter your email"
               />
             </div>
@@ -106,7 +122,10 @@ const Login: React.FC = () => {
                 autoComplete="current-password"
                 required
                 value={password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  if (error) setError('');
+                  setPassword(e.target.value);
+                }}
                 placeholder="Enter your password"
               />
             </div>

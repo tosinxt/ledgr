@@ -1,68 +1,48 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { Sidebar, SidebarBody, SidebarLink } from '@/components/ui/sidebar';
+import { getDashboardLinks } from '@/config/nav';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
 
+  const [open, setOpen] = useState(false);
+  const navLinks = getDashboardLinks();
+
   return (
-    <div className="px-4 py-6 sm:px-0">
-      <div className="border-4 border-dashed border-gray-200 rounded-lg p-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Welcome back, {user?.name}!
-          </h1>
-          
-          <div className="mb-8">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              {user?.plan === 'free' ? 'Free Plan' : 'Pro Plan'}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow border">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Total Invoices</h3>
-              <p className="text-3xl font-bold text-blue-600">0</p>
-              <p className="text-sm text-gray-500 mt-1">This month</p>
+    <div className="min-h-screen flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+      <Sidebar open={open} setOpen={setOpen}>
+        <SidebarBody className="justify-between gap-10">
+          <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+            {/* App Logo / Title */}
+            <div className="px-2 py-1 text-sm font-semibold text-neutral-800 dark:text-neutral-100">
+              {open ? 'Ledgr' : 'L'}
             </div>
-            
-            <div className="bg-white p-6 rounded-lg shadow border">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Total Amount</h3>
-              <p className="text-3xl font-bold text-green-600">$0.00</p>
-              <p className="text-sm text-gray-500 mt-1">This month</p>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg shadow border">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Pending</h3>
-              <p className="text-3xl font-bold text-yellow-600">0</p>
-              <p className="text-sm text-gray-500 mt-1">Awaiting payment</p>
+            <div className="mt-4 flex flex-col gap-1">
+              {navLinks.map((link, idx) => (
+                <SidebarLink key={idx} link={link} />
+              ))}
             </div>
           </div>
-
-          <div className="space-y-4">
-            <Link
-              to="/create-invoice"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Create Your First Invoice
-            </Link>
-            
-            <div className="text-sm text-gray-500">
-              <p>
-                You're on the <strong>{user?.plan === 'free' ? 'Free' : 'Pro'}</strong> plan.
-                {user?.plan === 'free' && (
-                  <span>
-                    {' '}
-                    <Link to="/upgrade" className="text-blue-600 hover:text-blue-500">
-                      Upgrade to Pro
-                    </Link>
-                    {' '}for unlimited invoices and advanced features.
-                  </span>
-                )}
-              </p>
-            </div>
+          <div className="px-2 pb-2">
+            <SidebarLink
+              link={{
+                label: user?.name || 'Account',
+                href: '/dashboard/profile',
+                icon: (
+                  <div className="h-7 w-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">
+                    {(user?.name || 'U').slice(0, 1).toUpperCase()}
+                  </div>
+                ),
+              }}
+            />
           </div>
-        </div>
+        </SidebarBody>
+      </Sidebar>
+      {/* Main dashboard content (renders nested routes) */}
+      <div className="flex-1 p-2 md:p-6 bg-white dark:bg-neutral-900 h-screen overflow-y-auto">
+        <Outlet />
       </div>
     </div>
   );

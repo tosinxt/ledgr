@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { InvoiceItem } from '../types';
+import { apiFetch, createTemplate, type InvoiceTemplate } from '@/lib/api';
+import TemplatePicker from '@/components/TemplatePicker';
+import { Alert, AlertContent, AlertDescription, AlertIcon, AlertTitle } from '@/components/ui/alert-1';
+import { CheckCircle2, Info, XCircle } from 'lucide-react';
 
 const CreateInvoice: React.FC = () => {
   const navigate = useNavigate();
@@ -19,6 +23,10 @@ const CreateInvoice: React.FC = () => {
   const [items, setItems] = useState<InvoiceItem[]>([
     { id: '1', description: '', quantity: 1, rate: 0, amount: 0 }
   ]);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string>('');
+  const [successMsg, setSuccessMsg] = useState<string>('');
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const addItem = () => {
     const newId = (items.length + 1).toString();
@@ -48,9 +56,85 @@ const CreateInvoice: React.FC = () => {
   const taxAmount = (subtotal * formData.taxRate) / 100;
   const total = subtotal + taxAmount;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const applyTemplate = (t: InvoiceTemplate) => {
+    // Map template items (no id/amount) to UI items with id and computed amount
+    const mapped: InvoiceItem[] = t.items.map((it, idx) => ({
+      id: String(idx + 1),
+      description: it.description,
+      quantity: it.quantity,
+      rate: it.rate,
+      amount: it.quantity * it.rate,
+    }));
+    setItems(mapped.length ? mapped : [{ id: '1', description: '', quantity: 1, rate: 0, amount: 0 }]);
+    setFormData((prev) => ({ ...prev, taxRate: t.tax_rate ?? prev.taxRate, notes: t.notes || '' }));
+    setErrorMsg('');
+    setSuccessMsg(`Applied template: ${t.name}`);
+    setTimeout(() => setSuccessMsg(''), 1200);
+  };
+
+  const onSaveAsTemplate = async () => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    const name = window.prompt('Template name');
+    if (!name) return;
+    try {
+      const payload = {
+        name,
+        items: items.map(it => ({ description: it.description, quantity: it.quantity, rate: it.rate })),
+        tax_rate: formData.taxRate,
+        notes: formData.notes || undefined,
+      };
+      await createTemplate(payload);
+      setSuccessMsg('Template saved');
+      setTimeout(() => setSuccessMsg(''), 1200);
+    } catch (e) {
+      setErrorMsg(e instanceof Error ? e.message : 'Failed to save template');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setErrorMsg('');
+    setSuccessMsg('');
+    // Map UI fields to backend invoice payload
+    const amountCents = Math.round((subtotal + taxAmount) * 100);
+    if (amountCents <= 0) {
+      setErrorMsg('Invoice total must be greater than 0 before creating. Add at least one item with a positive amount.');
+      return;
+    }
+    const payload = {
+      // Amount optional: server will compute from items + tax_rate if provided
+      amount: amountCents,
+      currency: 'USD',
+      customer: formData.clientName || 'Customer',
+      items: items.map(it => ({ description: it.description, quantity: it.quantity, rate: it.rate })),
+      tax_rate: formData.taxRate,
+      notes: formData.notes || undefined,
+      company_name: formData.companyName || undefined,
+      company_address: formData.companyAddress || undefined,
+      client_email: formData.clientEmail || undefined,
+      client_address: formData.clientAddress || undefined,
+      issue_date: formData.issueDate || undefined,
+      due_date: formData.dueDate || undefined,
+    };
+    try {
+      setSubmitting(true);
+      const res = await apiFetch('/api/invoices', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Failed to create invoice');
+      }
+      setSuccessMsg('Invoice created successfully! Redirecting...');
+      setTimeout(() => navigate('/dashboard/invoices'), 600);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to create invoice');
+    }
+    finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -61,6 +145,26 @@ const CreateInvoice: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {(errorMsg || successMsg) && (
+            <Alert
+              variant={errorMsg ? 'destructive' : 'success'}
+              appearance="light"
+              size="md"
+              close
+              onClose={() => {
+                setErrorMsg('');
+                setSuccessMsg('');
+              }}
+            >
+              <AlertIcon>
+                {errorMsg ? <XCircle className="text-destructive" /> : <CheckCircle2 className="text-[var(--color-success-foreground,var(--color-green-600))]" />}
+              </AlertIcon>
+              <AlertContent>
+                <AlertTitle>{errorMsg ? 'Something went wrong' : 'Success'}</AlertTitle>
+                <AlertDescription>{successMsg || errorMsg}</AlertDescription>
+              </AlertContent>
+            </Alert>
+          )}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Your Information</h3>
@@ -151,13 +255,29 @@ const CreateInvoice: React.FC = () => {
           <div>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">Invoice Items</h3>
-              <button
-                type="button"
-                onClick={addItem}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Add Item
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPickerOpen(true)}
+                  className="border border-gray-300 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-50"
+                >
+                  Load Template
+                </button>
+                <button
+                  type="button"
+                  onClick={onSaveAsTemplate}
+                  className="border border-gray-300 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-50"
+                >
+                  Save as Template
+                </button>
+                <button
+                  type="button"
+                  onClick={addItem}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  Add Item
+                </button>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -259,6 +379,20 @@ const CreateInvoice: React.FC = () => {
               <span>Total:</span>
               <span>${total.toFixed(2)}</span>
             </div>
+            {total === 0 && (
+              <div className="mt-2">
+                <Alert variant="warning" appearance="light" size="sm">
+                  <AlertIcon>
+                    <Info />
+                  </AlertIcon>
+                  <AlertContent>
+                    <AlertDescription>
+                      Please add items to the invoice to proceed.
+                    </AlertDescription>
+                  </AlertContent>
+                </Alert>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end space-x-4">
@@ -271,15 +405,18 @@ const CreateInvoice: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={submitting || total === 0}
+              className="px-6 py-2 bg-blue-600 text-white rounded-md disabled:opacity-60 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              Create Invoice
+              {submitting ? 'Creating...' : 'Create Invoice'}
             </button>
           </div>
         </form>
       </div>
+      <TemplatePicker open={pickerOpen} onClose={() => setPickerOpen(false)} onApply={applyTemplate} />
     </div>
   );
+
 };
 
 export default CreateInvoice;

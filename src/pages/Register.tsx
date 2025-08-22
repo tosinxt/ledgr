@@ -4,6 +4,8 @@ import { useAuth } from '../hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertContent, AlertDescription, AlertIcon, AlertTitle } from '@/components/ui/alert-1';
+import { XCircle } from 'lucide-react';
 
 const Register: React.FC = () => {
   const [firstName, setFirstName] = useState('');
@@ -36,8 +38,9 @@ const Register: React.FC = () => {
       const fullName = `${firstName} ${lastName}`.trim();
       await register(email, password, fullName);
       navigate('/dashboard');
-    } catch {
-      setError('Registration failed. Please try again.');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Registration failed. Please try again.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -87,11 +90,21 @@ const Register: React.FC = () => {
 
           <hr className="my-4 border-dashed" />
 
-          {error && (
-            <div className="mb-4 p-3 rounded-md bg-destructive/15 border border-destructive/20 text-destructive text-sm">
-              {error}
-            </div>
-          )}
+          <div aria-live="polite" aria-atomic="true">
+            {error && (
+              <div className="mb-4">
+                <Alert variant="destructive" appearance="light" close onClose={() => setError('')}>
+                  <AlertIcon>
+                    <XCircle className="text-destructive" />
+                  </AlertIcon>
+                  <AlertContent>
+                    <AlertTitle>Registration failed</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </AlertContent>
+                </Alert>
+              </div>
+            )}
+          </div>
 
           <div className="space-y-5">
             <div className="grid grid-cols-2 gap-3">
@@ -105,7 +118,10 @@ const Register: React.FC = () => {
                   name="firstname"
                   id="firstname"
                   value={firstName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    if (error) setError('');
+                    setFirstName(e.target.value);
+                  }}
                   placeholder="First name"
                 />
               </div>
@@ -119,7 +135,10 @@ const Register: React.FC = () => {
                   name="lastname"
                   id="lastname"
                   value={lastName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    if (error) setError('');
+                    setLastName(e.target.value);
+                  }}
                   placeholder="Last name"
                 />
               </div>
@@ -135,7 +154,10 @@ const Register: React.FC = () => {
                 name="email"
                 id="email"
                 value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  if (error) setError('');
+                  setEmail(e.target.value);
+                }}
                 placeholder="Enter your email"
               />
             </div>
@@ -150,7 +172,10 @@ const Register: React.FC = () => {
                 name="pwd"
                 id="pwd"
                 value={password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  if (error) setError('');
+                  setPassword(e.target.value);
+                }}
                 placeholder="Enter your password"
               />
             </div>
@@ -165,7 +190,10 @@ const Register: React.FC = () => {
                 name="confirmPwd"
                 id="confirmPwd"
                 value={confirmPassword}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  if (error) setError('');
+                  setConfirmPassword(e.target.value);
+                }}
                 placeholder="Confirm your password"
               />
             </div>
