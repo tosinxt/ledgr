@@ -1,8 +1,8 @@
 'use client'
+import { Suspense, lazy } from 'react'
 import { Activity, Globe, MessageCircle } from 'lucide-react'
-import DottedMap from 'dotted-map'
-import { Area, AreaChart, CartesianGrid } from 'recharts'
-import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+const MapWorld = lazy(() => import('@/components/ui/MapWorld'))
+const MonitoringChart = lazy(() => import('@/components/ui/MonitoringChart'))
 
 export function Features() {
     return (
@@ -28,7 +28,9 @@ export function Features() {
 
                         <div className="relative overflow-hidden">
                             <div className="[background-image:radial-gradient(var(--tw-gradient-stops))] z-1 to-background absolute inset-0 from-transparent to-75%"></div>
-                            <Map />
+                            <Suspense fallback={<div className="h-[220px]" />}>
+                                <MapWorld />
+                            </Suspense>
                         </div>
                     </div>
                 </div>
@@ -72,80 +74,11 @@ export function Features() {
                             Track invoices and payments in real-time. <span className="text-muted-foreground"> See what’s due, paid, and trending.</span>
                         </p>
                     </div>
-                    <MonitoringChart />
+                    <Suspense fallback={<div className="h-96" />}>
+                        <MonitoringChart />
+                    </Suspense>
                 </div>
             </div>
         </section>
-    )
-}
-
-const map = new DottedMap({ height: 55, grid: 'diagonal' })
-
-type DotPoint = { x: number; y: number }
-const points = map.getPoints() as DotPoint[]
-
-const svgOptions = {
-    backgroundColor: 'var(--color-background)',
-    color: 'currentColor',
-    radius: 0.15,
-}
-
-const Map = () => {
-    const viewBox = `0 0 120 60`
-    return (
-        <svg viewBox={viewBox} style={{ background: svgOptions.backgroundColor }}>
-            {points.map((point, index) => (
-                <circle key={index} cx={point.x} cy={point.y} r={svgOptions.radius} fill={svgOptions.color} />
-            ))}
-        </svg>
-    )
-}
-
-const chartConfig = {
-    desktop: {
-        label: 'Desktop',
-        color: '#2563eb',
-    },
-    mobile: {
-        label: 'Mobile',
-        color: '#60a5fa',
-    },
-} satisfies ChartConfig
-
-const chartData = [
-    { month: 'May', desktop: 56, mobile: 224 },
-    { month: 'June', desktop: 56, mobile: 224 },
-    { month: 'January', desktop: 126, mobile: 252 },
-    { month: 'February', desktop: 205, mobile: 410 },
-    { month: 'March', desktop: 200, mobile: 126 },
-    { month: 'April', desktop: 400, mobile: 800 },
-]
-
-const MonitoringChart = () => {
-    return (
-        <ChartContainer className="h-120 aspect-auto md:h-96" config={chartConfig}>
-            <AreaChart
-                accessibilityLayer
-                data={chartData}
-                margin={{
-                    left: 0,
-                    right: 0,
-                }}>
-                <defs>
-                    <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--color-desktop)" stopOpacity={0.8} />
-                        <stop offset="55%" stopColor="var(--color-desktop)" stopOpacity={0.1} />
-                    </linearGradient>
-                    <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--color-mobile)" stopOpacity={0.8} />
-                        <stop offset="55%" stopColor="var(--color-mobile)" stopOpacity={0.1} />
-                    </linearGradient>
-                </defs>
-                <CartesianGrid vertical={false} />
-                <ChartTooltip active cursor={false} content={<ChartTooltipContent className="dark:bg-muted" />} />
-                <Area strokeWidth={2} dataKey="mobile" type="stepBefore" fill="url(#fillMobile)" fillOpacity={0.1} stroke="var(--color-mobile)" stackId="a" />
-                <Area strokeWidth={2} dataKey="desktop" type="stepBefore" fill="url(#fillDesktop)" fillOpacity={0.1} stroke="var(--color-desktop)" stackId="a" />
-            </AreaChart>
-        </ChartContainer>
     )
 }

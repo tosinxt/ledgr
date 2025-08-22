@@ -1,13 +1,13 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, ChevronRight, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AnimatedGroup } from '@/components/ui/animated-group'
-import { Pricing } from '@/components/ui/pricing'
-import { Features } from '@/components/blocks/features-9'
+const Pricing = lazy(() => import('@/components/ui/pricing').then(m => ({ default: m.Pricing })))
+const Features = lazy(() => import('@/components/blocks/features-9').then(m => ({ default: m.Features })))
+const VideoShowcase = lazy(() => import('@/components/ui/VideoShowcase').then(m => ({ default: m.default })))
 
 import { cn } from '@/lib/utils'
-import heroVideo from '@/assets/Holographic_Invoice_Cinematic_Reveal.mp4'
 
 const transitionVariants = {
     item: {
@@ -199,7 +199,9 @@ export function HeroSection() {
                                     className="bg-gradient-to-b to-background absolute inset-0 z-10 from-transparent from-35%"
                                 />
                                 <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
-                                    <VideoShowcase />
+                                    <Suspense fallback={<div className="h-[360px]" />}>
+                                        <VideoShowcase />
+                                    </Suspense>
                                 </div>
                             </div>
                         </AnimatedGroup>
@@ -295,16 +297,22 @@ export function HeroSection() {
                 </section>
                 
                 {/* Features Section */}
-                <Features />
+                <Suspense fallback={<div />}
+                >
+                    <Features />
+                </Suspense>
                 
                 {/* Pricing Section */}
                 <section id="pricing" className="bg-background mt-20 md:mt-28">
-                    <Pricing 
-                        plans={ledgrPlans}
-                        title="Simple, Transparent Pricing"
-                        description="Choose the plan that works for your business
+                    <Suspense fallback={<div />}
+                    >
+                        <Pricing 
+                            plans={ledgrPlans}
+                            title="Simple, Transparent Pricing"
+                            description="Choose the plan that works for your business
 All plans include secure hosting, customer support, and regular updates."
-                    />
+                        />
+                    </Suspense>
                 </section>
             </main>
         </>
@@ -436,45 +444,4 @@ const Logo = ({ className }: { className?: string }) => {
     )
 }
 
-// Foreground showcase video inside framed container
-const VideoShowcase: React.FC = () => {
-    const ref = React.useRef<HTMLVideoElement | null>(null)
-
-    React.useEffect(() => {
-        const el = ref.current
-        if (!el) return
-        el.muted = true
-        let io: IntersectionObserver | null = new IntersectionObserver(
-            (entries) => {
-                const entry = entries[0]
-                if (!entry) return
-                if (entry.isIntersecting) {
-                    el.play().catch(() => {})
-                } else {
-                    el.pause()
-                }
-            },
-            { threshold: 0.35 }
-        )
-        io.observe(el)
-        return () => {
-            if (io) {
-                io.disconnect()
-            }
-            io = null
-        }
-    }, [])
-
-    return (
-        <video
-            ref={ref}
-            className="z-2 aspect-15/8 relative rounded-2xl border border-border/25 w-full object-cover"
-            src={heroVideo}
-            playsInline
-            autoPlay
-            muted
-            loop
-            preload="metadata"
-        />
-    )
-}
+// VideoShowcase moved to its own lazily-loaded file to reduce main hero bundle size
