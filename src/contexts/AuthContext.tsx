@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useState, useEffect, type ReactNode } from 'react';
 import type { User, AuthContextType } from '../types';
-import { getJSON, apiFetch } from '@/lib/api';
+import { getJSON, apiFetch, setAccessToken } from '@/lib/api';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -33,10 +33,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const res = await getJSON<{ user: User }>('/api/auth/login', {
+      const res = await getJSON<{ user: User; accessToken?: string }>('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
+      if (res.accessToken) setAccessToken(res.accessToken);
       setUser(res.user);
     } catch (e) {
       throw e instanceof Error ? e : new Error('Login failed');
@@ -64,6 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     await apiFetch('/api/auth/logout', { method: 'POST' });
+    setAccessToken(null);
     setUser(null);
   };
 

@@ -2,6 +2,24 @@ import { getJSONCache, setJSONCache, getBlobCache, setBlobCache } from '@/lib/ca
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
 
+// Simple module-scoped access token with localStorage persistence (Safari-friendly Authorization header)
+let ACCESS_TOKEN: string | null = null;
+try {
+  ACCESS_TOKEN = localStorage.getItem('ledgr:accessToken');
+} catch {}
+
+export function setAccessToken(token: string | null) {
+  ACCESS_TOKEN = token;
+  try {
+    if (token) localStorage.setItem('ledgr:accessToken', token);
+    else localStorage.removeItem('ledgr:accessToken');
+  } catch {}
+}
+
+export function getAccessToken(): string | null {
+  return ACCESS_TOKEN;
+}
+
 function resolveUrl(input: string): string {
   // If input is an absolute URL (http/https) or protocol-relative, leave it
   if (/^https?:\/\//i.test(input)) return input;
@@ -154,9 +172,14 @@ export async function apiFetch(input: string, init: RequestInit = {}) {
     ...(init.headers || {}),
   } as HeadersInit;
 
+  // Attach Authorization header if we have a token
+  const authHeaders: HeadersInit = ACCESS_TOKEN ? { Authorization: `Bearer ${ACCESS_TOKEN}` } : {};
+
   // Only set JSON content-type if we are sending a JSON body
   const shouldSetJson = !!init.body && !(init.body instanceof FormData) && !(init.body instanceof Blob);
-  const headers: HeadersInit = shouldSetJson ? { 'Content-Type': 'application/json', ...baseHeaders } : baseHeaders;
+  const headers: HeadersInit = shouldSetJson
+    ? { 'Content-Type': 'application/json', ...authHeaders, ...baseHeaders }
+    : { ...authHeaders, ...baseHeaders };
 
   return fetch(resolveUrl(input), { ...init, headers, credentials: 'include' });
 }
