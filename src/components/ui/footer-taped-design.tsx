@@ -41,7 +41,7 @@ export const Component = () => {
                 <Link className='text-neutral/50 whitespace-nowrap font-medium' to="/login">Login</Link>
                 <Link className='text-neutral/50 whitespace-nowrap font-medium' to="/register">Register</Link>
                 <Link className='text-neutral/50 whitespace-nowrap font-medium' to="/dashboard">Dashboard</Link>
-                <Link className='text-neutral/50 whitespace-nowrap font-medium' to="/create-invoice">Create Invoice</Link>
+                <Link to="/dashboard/create-invoice" className="text-neutral-600 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200">Create Invoice</Link>
               </div>
             </div>
 
@@ -73,7 +73,7 @@ export const Component = () => {
           <p className="whitespace-nowrap">©{currentYear} Ledgr. All rights reserved.</p>
           <div className="flex flex-row gap-4">
             <span className="text-neutral/50 whitespace-nowrap">Privacy Policy <span className='inline-flex ml-1 px-2.5 py-0.5 text-xs rounded-full -rotate-3 bg-gray-200 text-gray-700 border border-gray-300/60 dark:bg-zinc-800 dark:text-zinc-200 dark:border-white/10'>soon</span></span>
-            <span className="text-neutral/50 whitespace-nowrap">Terms &amp; Conditions <span className='inline-flex ml-1 px-2.5 py-0.5 text-xs rounded-full rotate-3 bg-gray-200 text-gray-700 border border-gray-300/60 dark:bg-zinc-800 dark:text-zinc-200 dark:border-white/10'>soon</span></span>
+            <span className="text-neutral/50 whitespace-nowrap">Terms & Conditions <span className='inline-flex ml-1 px-2.5 py-0.5 text-xs rounded-full rotate-3 bg-gray-200 text-gray-700 border border-gray-300/60 dark:bg-zinc-800 dark:text-zinc-200 dark:border-white/10'>soon</span></span>
           </div>
         </div>
 

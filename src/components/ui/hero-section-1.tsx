@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, ChevronRight, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AnimatedGroup } from '@/components/ui/animated-group'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 const Pricing = lazy(() => import('@/components/ui/pricing').then(m => ({ default: m.Pricing })))
 const Features = lazy(() => import('@/components/blocks/features-9').then(m => ({ default: m.Features })))
 const VideoShowcase = lazy(() => import('@/components/ui/VideoShowcase').then(m => ({ default: m.default })))
@@ -193,7 +194,7 @@ export function HeroSection() {
                                 },
                                 ...transitionVariants,
                             }}>
-                            <div className="relative -mr-56 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
+                            <div className="relative mt-6 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
                                 <div
                                     aria-hidden
                                     className="bg-gradient-to-b to-background absolute inset-0 z-10 from-transparent from-35%"
@@ -321,7 +322,7 @@ All plans include secure hosting, customer support, and regular updates."
 
 const menuItems = [
     { name: 'Features', href: '/dashboard' },
-    { name: 'Invoicing', href: '/create-invoice' },
+    { name: 'Invoicing', href: '/dashboard/create-invoice' },
     { name: 'Pricing', href: '#pricing' },
     { name: 'About', href: '/dashboard' },
 ]
@@ -399,6 +400,7 @@ const HeroHeader = () => {
                                 </ul>
                             </div>
                             <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
+                                <ThemeToggle />
                                 <Button
                                     asChild
                                     variant="outline"

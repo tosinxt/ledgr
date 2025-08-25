@@ -1,13 +1,58 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { AvatarPicker } from '@/components/ui/avatar-picker';
+import { fetchProfile, updateProfile } from '@/lib/api';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
+  const [avatarId, setAvatarId] = useState<number | undefined>(undefined);
+  const [saving, setSaving] = useState(false);
+  
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const profile = await fetchProfile();
+        if (!mounted) return;
+        if (typeof profile.avatar_id === 'number') setAvatarId(profile.avatar_id || undefined);
+      } catch {
+        /* noop: ignore fetch errors */
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Profile</h2>
         <p className="text-sm text-gray-500">Manage your personal information</p>
+      </div>
+
+      <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Avatar</h3>
+        <div className="space-y-4">
+          <AvatarPicker
+            selectedId={avatarId}
+            onChange={async (id) => {
+              setAvatarId(id);
+              try {
+                setSaving(true);
+                await updateProfile({ avatar_id: id });
+                // notify app that profile changed
+                try {
+                  window.dispatchEvent(new CustomEvent('profile:updated', { detail: { avatar_id: id } }));
+                } catch {}
+              } finally {
+                setSaving(false);
+              }
+            }}
+            username={user?.name || user?.email || 'Me'}
+          />
+          {saving && (
+            <p className="text-sm text-gray-500">Saving…</p>
+          )}
+        </div>
       </div>
 
       <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-6 space-y-4">

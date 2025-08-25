@@ -24,8 +24,22 @@ const Login: React.FC = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Invalid email or password';
-      setError(msg);
+      let raw = e instanceof Error ? e.message : 'Invalid email or password';
+      // If backend returned a JSON string, try to parse and extract error
+      try {
+        if (raw.trim().startsWith('{')) {
+          const parsed = JSON.parse(raw);
+          if (typeof parsed?.error === 'string') raw = parsed.error;
+        }
+      } catch {
+        // ignore JSON parse errors; fall back to raw message
+      }
+      // Redirect to resend page if not confirmed
+      if (/confirm/i.test(raw)) {
+        navigate(`/resend-confirmation?email=${encodeURIComponent(email)}`);
+        return;
+      }
+      setError(raw);
     } finally {
       setLoading(false);
     }
@@ -128,6 +142,11 @@ const Login: React.FC = () => {
                 }}
                 placeholder="Enter your password"
               />
+              <div className="text-right text-sm">
+                <Button asChild variant="link" className="px-0">
+                  <Link to="/forgot-password">Forgot password?</Link>
+                </Button>
+              </div>
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
