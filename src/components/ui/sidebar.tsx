@@ -162,10 +162,17 @@ export const SidebarLink = ({
   link: Links;
   className?: string;
 }) => {
-  const { open, animate } = useSidebar();
+  const { open, animate, setOpen } = useSidebar();
+  const handleClick = () => {
+    // Auto-close only on mobile widths (below md: 768px)
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches) {
+      setOpen(false);
+    }
+  };
   return (
     <NavLink
       to={link.href}
+      onClick={handleClick}
       className={({ isActive }) =>
         cn(
           "flex items-center justify-start gap-2 group/sidebar py-2 px-2 rounded-md",
